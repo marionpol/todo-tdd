@@ -5,6 +5,11 @@ const newTodo = require("../mock-data/new-todo.json")
 const endpointUrl = "/todos/";
 
 let firstTodo, newTodoId
+const testData = {
+    title: "Make integration test for PUT",
+    done: true
+}
+const notExistingTodoId = "kdihu843jkfnd289"
 
 describe(endpointUrl, () => {
     it("POST " + endpointUrl, async () => {
@@ -58,6 +63,22 @@ describe(endpointUrl, () => {
         expect(res.statusCode).toBe(200)
         expect(res.body.title).toBe(testData.title)
         expect(res.body.done).toBe(testData.done)
+    })
+    it("should return 500 on PUT "+ endpointUrl, async () => {
+        const res = await request(app)
+        .put(endpointUrl + notExistingTodoId)
+        .send(testData);
+        expect(res.statusCode).toBe(500)
+    })
+    it("DELETE " + endpointUrl, async () => {
+        const res = await request(app)
+        .delete(endpointUrl + newTodoId)
+        expect(res.statusCode).toBe(200)
+    })
+    it("should return 500 on DELETE "+ endpointUrl, async () => {
+        const res = await request(app)
+        .delete(endpointUrl + notExistingTodoId);
+        expect(res.statusCode).toBe(500)
     })
 })
     
