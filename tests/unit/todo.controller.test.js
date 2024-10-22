@@ -6,6 +6,7 @@ const allTodos = require('../mock-data/all-todos.json')
 
 TodoModel.create = jest.fn()
 TodoModel.find = jest.fn()
+TodoModel.findById = jest.fn()
 
 let req, res, next
 beforeEach(() => {
@@ -67,5 +68,36 @@ describe('TodoController.createTodo', () => {
         TodoModel.create.mockReturnValue(rejectedPromise)
         await TodoController.createTodo(req, res , next)
         expect(next).toBeCalledWith(errorMesssage)
+    })
+
+    describe("TodoController.getTodoById", () => {
+        it("should have a getTodoById", () => {
+            expect(typeof TodoController.getTodoById).toBe("function")
+        })
+        it("should call TodoModel.findById with route parameters", async () => {
+            req.params.todoId ="6717448c9cb56c749088024a";
+            await TodoController.getTodoById(req, res, next)
+            expec(TodoModel.findById).toBeCalledWith("6717448c9cb56c749088024a")
+        })
+       it("should return json body and response code 200", async () => {
+        TodoModel.findById.mockReturnValue(newTodo)
+        await TodoController.getTodoById(req, res, next)
+        expect(res.statusCode).toBe(200)
+        expect(res._getJSONData()).toStrictEqual(newTodo)
+        expect(res._isEndCalled()).toBeTruthy()
+       })
+        it("should handle errors", async () => {
+            const errorMesssage = {message: "error finding todoModel"}
+            const rejectedPromise = Promise.reject(errorMessage)
+            TodoModel.findById.mockReturnValue(rejectedPromise)
+            await TodoController.getTodoById(req, res , next)
+            expect(next).toBeCalledWith(errorMesssage)
+        })
+        it("should return 404 when item doesnt exist", async () => {
+            TodoModel.findById.mockReturnValue(null);
+            await TodoController.getTodoById(req, res, next)
+            expect(res.statusCode).toBe(404)
+            expect(res._isEndCalled()).toBeTruthy()
+        })
     })
 })
